@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liqour MVP</title>
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script>
+        if (typeof window.ethereum !== 'undefined') {
+            web3 = new Web3(window.ethereum);
+            console.log('MetaMask detected. Using window.ethereum.');
+            // If MetaMask is detected, use window.ethereum
+
+        }
+        else {
+            web3 = new Web3('https://eth-sepolia.g.alchemy.com/v2/GQ5JHbx4AryJFMElt3_WB1wJXI_fqAZx');
+        }
+        web3.eth.defaultAccoun = web3.eth.accounts[0];
+
+        const abi = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_price",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_alcoholPerc",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string[]",
+                        "name": "_rawMaterialUids",
+                        "type": "string[]"
+                    }
+                ],
+                "name": "addBottle",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_price",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_uid",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_quantity",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_purchaseDate",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_quality",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_supplier",
+                        "type": "address"
+                    }
+                ],
+                "name": "addRawMaterial",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "bytes32",
+                        "name": "uId",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "BottleAdded",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "quantity",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "supplier",
+                        "type": "address"
+                    }
+                ],
+                "name": "RawmaterialPurchased",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "_uid",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "getBottleDetailsByUid",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    },
+                    {
+                        "components": [
+                            {
+                                "internalType": "string",
+                                "name": "name",
+                                "type": "string"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "price",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "string",
+                                "name": "uid",
+                                "type": "string"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "quantity",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "string",
+                                "name": "purchaseDate",
+                                "type": "string"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "owner",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "string",
+                                "name": "qualityParam",
+                                "type": "string"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "supplier",
+                                "type": "address"
+                            }
+                        ],
+                        "internalType": "struct Liquor.Raw_material[]",
+                        "name": "",
+                        "type": "tuple[]"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "name": "s_materials",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "uid",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "quantity",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "purchaseDate",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "qualityParam",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "supplier",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ]
+
+        const contractAddress = "0xFcb4806D6717eB8Dc0519bc9e1D74336eFb8fd12";
+        const contractInstance = new web3.eth.Contract(abi, contractAddress);
+
+        async function add(type) {
+            if (type === "rawMaterial") {
+                //encodedFunctionCall = contractInstance.methods.addRawMaterial("Rice", 253, "3", 100, "20-02-2024", "Good", '0xC4b8a1E54b3a78894d9aCEB57648812aE8696cE7').encodeABI();
+
+                const productName = document.getElementById('productNameInput').value;
+                const price = parseInt(document.getElementById('priceInput').value); // Convert to integer if needed
+                const uId = document.getElementById('uIdInput').value; // Convert to integer if needed
+                const quantity = parseInt(document.getElementById('quantityInput').value);
+                const purchaseDate = document.getElementById('purchaseDateInput').value;
+                const quality = document.getElementById('qualityInput').value;
+                const supplier = document.getElementById('supplierAddressInput').value;
+
+                encodedFunctionCall = contractInstance.methods.addRawMaterial(productName, price, uId, quantity, purchaseDate, quality, supplier).encodeABI();
+            }
+
+            if (type === "Bottle") {
+                // encodedFunctionCall = contractInstance.methods.addBottle("BlackDog", 500, 60, ["3"]).encodeABI();
+
+                const bottleName = document.getElementById('bottleNameInput').value;
+                const _price = parseInt(document.getElementById('_priceInput').value);
+                const alcohalPer = parseInt(document.getElementById('alcohalPerInput').value);
+                const rawMaterialUidsArrInput = document.getElementById('rawMaterialUidsArr').value;
+
+                // Convert the input string to an array
+                const rawMaterialUidsArr = rawMaterialUidsArrInput.split(',');
+
+                encodedFunctionCall = contractInstance.methods.addBottle(bottleName, _price, alcohalPer, rawMaterialUidsArr).encodeABI();
+            }
+
+            const privateKey = "0x35822f8c8d863c74679a7c8665510bc350d5d1ae4a45b81e73a33d506c344fe7";
+            const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
+            // web3.eth.accounts.wallet.add(signer);
+
+            const tx = {
+                from: signer.address,
+                to: contractInstance.options.address,
+                gas: web3.utils.toHex(903081),
+                gasPrice: await web3.eth.getGasPrice(),
+                data: encodedFunctionCall,
+                chainId: 11155111
+            }
+
+
+            const signedTx = await web3.eth.accounts.signTransaction(tx, signer.privateKey);
+
+            const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction).once("transactionHash", (txHash) => {
+                console.log("Mining transaction.......")
+
+
+                console.log(txHash);
+                alert(txHash);
+            })
+
+            console.log(receipt)
+
+        }
+
+        async function query(type) {
+            if (type === "getBottleDetails") {
+
+                const bottleUniqueId = document.getElementById('bottleUniqueId').value;
+                //const uId = "0x4b903220517b90d1a5b8cac9b3d286f7ce3faf8c9e558da79fcc052d3d1b8409"
+
+                const result = await contractInstance.methods.getBottleDetailsByUid(bottleUniqueId).call();
+
+                const serializedResult = JSON.stringify(result, (key, value) => {
+                    // Check if value is a BigInt
+                    if (typeof value === 'bigint') {
+                        return value.toString(); // Convert BigInt to string
+                    }
+                    return value; // Return unchanged value
+                });
+
+                // Print result to console
+                console.log(serializedResult);
+
+                // Display result in textarea
+                document.getElementById("bottleDetails").value = serializedResult;
+
+
+                //console.log(result);
+            }
+        }
+
+        //query("getBottleDetails");
+
+        //add("rawMaterial");
+        //add("Bottle");
+
+
+
+    </script>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>Liqour MVP</h1>
+        </p>
+
+
+        <form id="transactionForm">
+            <label for="productNameInput">Product Name:</label>
+            <input type="text" id="productNameInput" name="productName" required><br><br>
+
+            <label for="priceInput">Price:</label>
+            <input type="number" id="priceInput" name="price" required><br><br>
+
+            <label for="uIdInput">Uid:</label>
+            <input type="number" id="uIdInput" name="uid" required><br><br>
+
+            <label for="quantityInput">Quantity:</label>
+            <input type="text" id="quantityInput" name="quantity" required><br><br>
+
+            <label for="purchaseDateInput">Purchase Date:</label>
+            <input type="date" id="purchaseDateInput" name="purchaseDate" required><br><br>
+
+            <label for="qualityInput">Quality:</label>
+            <input type="text" id="qualityInput" name="quality" required><br><br>
+
+            <label for="supplierAddressInput">Supplier Address:</label>
+            <input type="text" id="supplierAddressInput" name="supplierAddress" required><br><br>
+
+            <button type="button" onclick="add('rawMaterial')">Add Rawmaterial</button>
+        </form>
+
+
+        <!-- <h2 id="instructor"></h2>
+        <table>
+            <tr>
+                <td>
+                    <button id="button" onclick="add('rawMaterial')">Add Raw Material</button>
+                </td>
+            </tr>
+        </table>
+        </br>
+        <textarea id="AddRawMaterial" style="border:none;width:400px;"></textarea> -->
+
+        <form id="transactionForm">
+            <label for="bottleNameInput">Bottle Name:</label>
+            <input type="text" id="bottleNameInput" name="bottleName" required><br><br>
+
+            <label for="_priceInput">Price:</label>
+            <input type="number" id="_priceInput" name="price" required><br><br>
+
+            <label for="alcohalPerInput">Alcohol Percentage:</label>
+            <input type="number" id="alcohalPerInput" name="alcoholPercentage" required><br><br>
+
+            <label for="rawMaterialUidsArr">Raw Material's Uid:</label>
+            <input type="number" id="rawMaterialUidsArr" name="rawMaterialUids"
+                placeholder="Enter UIDs separated by commas" required><br><br>
+            <button type="button" onclick="add('Bottle')">Add New Bottle</button>
+        </form>
+
+
+        <!-- <h2 id="instructor"></h2>
+
+        <table>
+            <tr>
+                <td>
+                    <button id="button" onclick="add('Bottle')">Add New Bottle</button>
+                </td>
+            </tr>
+        </table>
+        </br>
+        <textarea id="AddBottle" style="border:none;width:400px;"></textarea>
+        <h2 id="instructor"></h2> -->
+
+        <form id="queryForm">
+            <label for="bottleUniqueId">Bottle Unique Id:</label>
+            <input type="text" id="bottleUniqueId" name="bootle UID" placeholder="Enter hexadecimal value"
+                required><br><br>
+
+            <button type="button" onclick="query('getBottleDetails')">Query Bottle Details</button>
+        </form>
+        <textarea id="bottleDetails" style="border:black;width:1000px;"></textarea>
+
+        <!-- <button id="queryBottleById" onclick="query('getBottleDetails')">Query Bottle details</button>
+        </br>
+        <textarea id="bottleDetails" style="border:black;width:1000px;"></textarea>
+        </br>
+        </br> -->
+    </div>
+</body>
+
+</html>
