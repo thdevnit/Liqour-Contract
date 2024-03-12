@@ -1,0 +1,90 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+
+contract Liquor {
+
+        struct Raw_material{
+        string name;
+        uint256 price;
+        string uid;
+        uint256 quantity;
+        string purchaseDate;
+        address owner; 
+        string qualityParam;
+        address supplier;            
+    }
+
+    struct Bottle{
+        string name;
+        uint256 price;
+        bytes32 uid;
+        uint256 alcohalPercentage;
+        uint256 manufacturingDate;
+        Raw_material[] materialArray;
+        address manufacturer;
+    }
+
+
+
+    mapping (string => Raw_material) public s_materials;
+    mapping (bytes32 => Bottle) private s_bottles;
+    
+
+    event RawmaterialPurchased(string indexed name,uint256 indexed price,uint256 indexed quantity,address supplier);
+    event BottleAdded(string indexed name,uint256 indexed price,bytes32 indexed uId);
+
+
+
+    function addRawMaterial(string memory _name,uint256 _price,string memory _uid,uint256 _quantity,string memory _purchaseDate, string memory _quality, address _supplier) public {
+       
+
+ Raw_material memory raw_Material ;
+        raw_Material.name = _name;
+        raw_Material.price = _price;
+        raw_Material.uid = _uid;
+        raw_Material.quantity = _quantity;
+        raw_Material.purchaseDate = _purchaseDate;
+        raw_Material.owner = msg.sender;
+        raw_Material.qualityParam = _quality;
+        raw_Material.supplier = _supplier;
+
+        s_materials[_uid] = raw_Material ;
+
+        emit RawmaterialPurchased(_name,_price,_quantity,_supplier);
+    }
+
+
+    function addBottle(string memory _name,uint256 _price,uint256 _alcoholPerc,string[] memory _rawMaterialUids)
+    public returns(bytes32) {
+        string memory concatenatedValues = string(abi.encodePacked(_name, _price, _alcoholPerc,block.timestamp));
+        bytes32 _uId = keccak256(abi.encodePacked(concatenatedValues));
+ Bottle storage bottle =s_bottles[_uId]  ;
+ bottle.name = _name;
+ bottle.price = _price;
+ bottle.uid = _uId;
+ bottle.alcohalPercentage = _alcoholPerc;
+ bottle.manufacturingDate = block.timestamp;
+ bottle.manufacturer = msg.sender;
+  
+
+ for (uint256 i=0; i < _rawMaterialUids.length; i++) 
+ {
+    s_bottles[_uId].materialArray.push(s_materials[_rawMaterialUids[i]]);
+ }
+ emit BottleAdded(_name,_price,_uId);
+ return _uId ;
+ }
+
+
+
+    function getBottleDetailsByUid(bytes32 _uid) public view returns(string memory,uint256,bytes32,uint256,uint256,Raw_material[] memory,address){
+        return(s_bottles[_uid].name,s_bottles[_uid].price,s_bottles[_uid].uid,s_bottles[_uid].alcohalPercentage,
+        s_bottles[_uid].manufacturingDate,s_bottles[_uid].materialArray,s_bottles[_uid].manufacturer);
+    }
+
+
+
+
+
+}
